@@ -1,5 +1,6 @@
 **/main
 **/debug
+**/gen
 
 # Prerequisites
 *.d

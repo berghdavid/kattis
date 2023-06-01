@@ -4,9 +4,11 @@ LDFLAGS=-lm
 OPT_FLAGS=
 DEBUG_FLAGS=-ggdb3
 
-SRC_DIR := src
 DATA_DIR = data
+SRC_DIR = src
+GEN_DIR = gensrc
 SRC = $(wildcard $(SRC_DIR)/*.c)
+GEN = $(wildcard $(GEN_DIR)/*.c)
 
 all: main debug
 
@@ -31,6 +33,13 @@ valgrind: debug
 debug: $(SRC)
 	$(CC) -o debug $(DEBUG_FLAGS) $(CFLAGS) $(SRC) $(LDFLAGS)
 
+run_gen: gen
+	./gen
+
+gen: $(GEN)
+	$(CC) -o gen $(CFLAGS) $(OPT_FLAGS) $(GEN) $(LDFLAGS)
+
 clean: all
 	rm main
 	rm debug
+	rm gen
