@@ -3,59 +3,21 @@
 #include <math.h>
 #include "sol.h"
 
-void append_sq(Data* d, Sq* sq)
+void print_data(Data* d)
 {
-	Listq*	q;
+	printf("Mean val: %f\n", d->mv);
+	printf("Mean dist: %f\n", d->mn);
+	printf("Mean value: %f\n", d->mh);
+}
+
+void print_sol(Data* d)
+{
 	El*	el;
-	El*	el2;
 
-	q = d->best;
-
-	if (q->size == d->g->k && sq->val <= q->last->sq->val) {
-		return;
-	}
-	el = malloc(sizeof(El));
-	el->sq = sq;
-	el->next = NULL;
-	el->prev = NULL;
-
-	if (q->size == d->g->k) {
-		el2 = q->last->prev;
-		while (sq->val > el2->sq->val) {
-			el2 = el2->prev;
-		}
-		el->next = el2->next;
-		el->prev = el2;
-		el2->next->prev = el;
-		el2->next = el;
-
-		el = q->last;
-		q->last = q->last->prev;
-		q->last->next = NULL;
-		free(el);
-	} else {
-		if (q->first == NULL) {
-			q->first = el;
-			q->last = el;
-		} else if (sq->val >= q->first->sq->val) {
-			el->next = q->first;
-			q->first->prev = el;
-			q->first = el;
-		} else if (sq->val <= q->last->sq->val) {
-			el->prev = q->last;
-			q->last->next = el;
-			q->last = el;
-		} else {
-			el2 = q->last->prev;
-			while (sq->val > el2->sq->val) {
-				el2 = el2->prev;
-			}
-			el->prev = el2;
-			el->next = el2->next;
-			el2->next->prev = el;
-			el2->next = el;
-		}
-		q->size++;
+	el = d->best->first;
+	while (el != NULL) {
+		printf("%d %d\n", el->sq->x, el->sq->y);
+		el = el->next;
 	}
 }
 
@@ -88,14 +50,68 @@ void print_listq(Listq* q)
 		printf(" %.2d | %d \t| %d\n", el->sq->val, el->sq->x, el->sq->y);
 		el = el->prev;
 	}
+}	
 
-	i = 0;
-	el = q->first;
-	while (el != NULL) {
-		el = el->next;
-		i++;
+void append_sq(Data* d, Sq* sq)
+{
+	Listq*	q;
+	El*	el;
+	El*	el2;
+
+	q = d->best;
+
+	if (q->size == d->g->k && sq->val <= q->last->sq->val) {
+		return;
 	}
-	printf("size::::: %d\n", i);
+	el = malloc(sizeof(El));
+	el->sq = sq;
+	el->next = NULL;
+	el->prev = NULL;
+
+	if (q->size == d->g->k) {
+		if (sq->val >= q->first->sq->val) {
+			el->next = q->first;
+			q->first->prev = el;
+			q->first = el;
+		} else {
+			el2 = q->last;
+			while (sq->val > el2->sq->val) {
+				el2 = el2->prev;
+			}
+			el->next = el2->next;
+			el->prev = el2;
+			el2->next->prev = el;
+			el2->next = el;
+		}
+
+		el = q->last;
+		q->last = q->last->prev;
+		q->last->next = NULL;
+		free(el);
+	} else {
+		if (q->first == NULL) {
+			q->first = el;
+			q->last = el;
+		} else if (sq->val >= q->first->sq->val) {
+			el->next = q->first;
+			q->first->prev = el;
+			q->first = el;
+		} else if (sq->val <= q->last->sq->val) {
+			el->prev = q->last;
+			q->last->next = el;
+			q->last = el;
+		} else {
+			el2 = q->last->prev;
+			while (sq->val > el2->sq->val) {
+				el2 = el2->prev;
+			}
+			el->prev = el2;
+			el->next = el2->next;
+			el2->next->prev = el;
+			el2->next = el;
+		}
+		q->size++;
+	}
 }
 
 Data* init_data(Grid* g)
@@ -135,13 +151,6 @@ Data* init_data(Grid* g)
 	return d;
 }
 
-void print_data(Data* d)
-{
-	printf("Mean val: %f\n", d->mv);
-	printf("Mean dist: %f\n", d->mn);
-	printf("Mean value: %f\n", d->mh);
-}
-
 void free_data(Data* d)
 {
 	El*	el;
@@ -167,13 +176,13 @@ void brute_force(Grid* g)
 	Data*	d;
 
 	d = init_data(g);
-	//print_data(d);
-	print_listq(d->best);
+	print_grid(g);
+	//print_listq(d->best);
 	free_data(d);
 }
 
 void solve(Grid* g)
 {
-	//print_persons(g);
 	brute_force(g);
+	//print_sol(g);
 }

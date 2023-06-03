@@ -15,7 +15,7 @@ void print_grid(Grid* g)
 	printf("Persons: %d\n", g->k);
 
 	printf("+");
-	for (i = 0; i < 3 * g->m + 1; i++) {
+	for (i = 0; i < 4 * g->m + 1; i++) {
 		printf("-");
 	}
 	printf("+\n");
@@ -23,25 +23,16 @@ void print_grid(Grid* g)
 	for (i = 0; i < g->n; i++) {
 		printf("| ");
 		for (j = 0; j < g->m; j++) {
-			printf("%.2d ", g->grid[i][j]);
+			printf("%.3d ", g->grid[i][j]);
 		}
 		printf("|\n");
 	}
 
 	printf("+");
-	for (i = 0; i < 3 * g->m + 1; i++) {
+	for (i = 0; i < 4 * g->m + 1; i++) {
 		printf("-");
 	}
 	printf("+\n");
-}
-
-void print_persons(Grid* g)
-{
-	int	i;
-
-	for (i = 0; i < g->k; i++) {
-		printf("%d %d\n", g->px[i], g->py[i]);
-	}
 }
 
 int read_dig()
@@ -76,8 +67,6 @@ Grid* get_grid()
 		}
 	}
 
-	g->px = calloc(g->k, sizeof(int));
-	g->py = calloc(g->k, sizeof(int));
 	return g;
 }
 
@@ -85,8 +74,6 @@ void free_grid(Grid* g)
 {
 	int	i;
 
-	free(g->px);
-	free(g->py);
 	for (i = 0; i < g->n; i++) {
 		free(g->grid[i]);
 	}

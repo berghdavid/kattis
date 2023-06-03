@@ -35,6 +35,8 @@ struct Data {
 	double	mh;	/* Mean value from one house	*/
 };
 
+void print_sol(Data* d);
+
 Listq* init_list(Grid* g, Data* d);
 
 void print_listq(Listq* q);

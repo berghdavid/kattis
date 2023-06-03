@@ -5,8 +5,6 @@ typedef struct Grid Grid;
 
 struct Grid {
 	int**	grid;	/* List of rows with grid ints	*/
-	int*	px;	/* List of persons x-positions	*/
-	int*	py;	/* List of persons y-positions	*/
 	int	t;	/* Test case id			*/
 	int	m;	/* Width of the grid (cols)	*/
 	int	n;	/* Height of grid (rows)	*/
@@ -14,8 +12,6 @@ struct Grid {
 };
 
 void print_grid(Grid* g);
-
-void print_persons(Grid* g);
 
 int read_dig();
 
