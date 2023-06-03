@@ -3,82 +3,134 @@
 #include <math.h>
 #include "sol.h"
 
-void append_sq(Data* d, Listq* q, Sq* sq)
-{
-	if (sq->val > d->mv) {
-		sq->next = q->first;
-		q->first = sq->next;
-	} else {
-		if (q->last != NULL) {
-			q->last->next = sq;
-		}
-		q->last = sq;
-	}
-}
-
-Listq* init_list(Grid* g, Data* d)
+void append_sq(Data* d, Sq* sq)
 {
 	Listq*	q;
-	Sq*	sq;
-	int	i;
-	int	j;
+	El*	el;
+	El*	el2;
 
-	q = malloc(sizeof(Listq));
-	q->first = NULL;
-	q->last = NULL;
+	q = d->best;
 
-	for (i = 0; i < g->n; i++) {
-		for (j = 0; j < g->m; j++) {
-			sq = malloc(sizeof(Sq));
-			sq->next = NULL;
-			sq->x = j;
-			sq->y = i;
-			sq->val = g->g[i][j];
-			append_sq(d, q, sq);
-		}
+	if (q->size == d->g->k && sq->val <= q->last->sq->val) {
+		return;
 	}
-	return q;
+	el = malloc(sizeof(El));
+	el->sq = sq;
+	el->next = NULL;
+	el->prev = NULL;
+
+	if (q->size == d->g->k) {
+		el2 = q->last->prev;
+		while (sq->val > el2->sq->val) {
+			el2 = el2->prev;
+		}
+		el->next = el2->next;
+		el->prev = el2;
+		el2->next->prev = el;
+		el2->next = el;
+
+		el = q->last;
+		q->last = q->last->prev;
+		q->last->next = NULL;
+		free(el);
+	} else {
+		if (q->first == NULL) {
+			q->first = el;
+			q->last = el;
+		} else if (sq->val >= q->first->sq->val) {
+			el->next = q->first;
+			q->first->prev = el;
+			q->first = el;
+		} else if (sq->val <= q->last->sq->val) {
+			el->prev = q->last;
+			q->last->next = el;
+			q->last = el;
+		} else {
+			el2 = q->last->prev;
+			while (sq->val > el2->sq->val) {
+				el2 = el2->prev;
+			}
+			el->prev = el2;
+			el->next = el2->next;
+			el2->next->prev = el;
+			el2->next = el;
+		}
+		q->size++;
+	}
 }
 
 void print_listq(Listq* q)
 {
-	/* TODO::::: */
-}
+	El*	el;
+	int	i;
 
-void free_listq(Listq* q)
-{
-	Sq*	sq;
-	Sq*	tmp;
-
-	sq = q->first;
-	while (sq != NULL) {
-		tmp = sq->next;
-		free(sq);
-		sq = tmp;
+	el = q->first;
+	printf("\nSize: %d\n", q->size);
+	printf(" --- 10 first ---\n");
+	printf("Val | X \t| Y\n");
+	printf("-----------------------\n");
+	for (i = 0; i < 10; i++) {
+		if (el == NULL) {
+			break;
+		}
+		printf(" %.2d | %d \t| %d\n", el->sq->val, el->sq->x, el->sq->y);
+		el = el->next;
 	}
-	free(q);
+
+	el = q->last;
+	printf("\n --- 10 last ---\n");
+	printf("Val | X \t| Y\n");
+	printf("-----------------------\n");
+	for (i = 0; i < 10; i++) {
+		if (el == NULL) {
+			break;
+		}
+		printf(" %.2d | %d \t| %d\n", el->sq->val, el->sq->x, el->sq->y);
+		el = el->prev;
+	}
+
+	i = 0;
+	el = q->first;
+	while (el != NULL) {
+		el = el->next;
+		i++;
+	}
+	printf("size::::: %d\n", i);
 }
 
 Data* init_data(Grid* g)
 {
+	Sq*		sq;
 	Data*		d;
 	long int	sum;
 	int		i;
 	int		j;
 
+	d = malloc(sizeof(Data));
+	d->best = malloc(sizeof(Listq));
+	d->best->first = NULL;
+	d->best->last = NULL;
+	d->best->size = 0;
+
+	d->g = g;
+	d->grid = malloc(g->n * sizeof(Sq*));
+
 	sum = 0;
 	for (i = 0; i < g->n; i++) {
+		d->grid[i] = malloc(g->m * sizeof(Sq));
 		for (j = 0; j < g->m; j++) {
-			sum += g->g[i][j];
+			sq = &d->grid[i][j];
+			sq->x = j;
+			sq->y = i;
+			sq->val = g->grid[i][j];
+			append_sq(d, sq);
+			sum += g->grid[i][j];
 		}
 	}
 
-
-	d = malloc(sizeof(Data));
 	d->mv = (double) sum / (g->n * g->m);
 	d->mn = sqrt(g->n * g->m / g->k);
 	d->mh = d->mv * d->mn;
-	d->sqs = init_list(g, d);
 
 	return d;
 }
@@ -92,7 +144,21 @@ void print_data(Data* d)
 
 void free_data(Data* d)
 {
-	free_listq(d->sqs);
+	El*	el;
+	El*	eltmp;
+	int	i;
+
+	el = d->best->first;
+	while (el != NULL) {
+		eltmp = el->next;
+		free(el);
+		el = eltmp;
+	}
+	free(d->best);
+	for (i = 0; i < d->g->n; i++) {
+		free(d->grid[i]);
+	}
+	free(d->grid);
 	free(d);
 }
 
@@ -101,13 +167,13 @@ void brute_force(Grid* g)
 	Data*	d;
 
 	d = init_data(g);
-	print_data(d);
-	print_listq(d->sqs);
+	//print_data(d);
+	print_listq(d->best);
 	free_data(d);
 }
 
 void solve(Grid* g)
 {
-	print_persons(g);
+	//print_persons(g);
 	brute_force(g);
 }

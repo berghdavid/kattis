@@ -23,7 +23,7 @@ void print_grid(Grid* g)
 	for (i = 0; i < g->n; i++) {
 		printf("| ");
 		for (j = 0; j < g->m; j++) {
-			printf("%.2d ", g->g[i][j]);
+			printf("%.2d ", g->grid[i][j]);
 		}
 		printf("|\n");
 	}
@@ -68,11 +68,11 @@ Grid* get_grid()
 	scanf("%d %d %d", &g->n, &g->m, &g->k);
 	getchar();
 
-	g->g = malloc(g->n * sizeof(int*));
+	g->grid = malloc(g->n * sizeof(int*));
 	for (i = 0; i < g->n; i++) {
-		g->g[i] = malloc(g->m * sizeof(int));
+		g->grid[i] = malloc(g->m * sizeof(int));
 		for (j = 0; j < g->m; j++) {
-			g->g[i][j] = read_dig();
+			g->grid[i][j] = read_dig();
 		}
 	}
 
@@ -88,9 +88,9 @@ void free_grid(Grid* g)
 	free(g->px);
 	free(g->py);
 	for (i = 0; i < g->n; i++) {
-		free(g->g[i]);
+		free(g->grid[i]);
 	}
-	free(g->g);
+	free(g->grid);
 	free(g);
 }
 

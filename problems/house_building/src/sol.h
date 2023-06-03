@@ -1,27 +1,35 @@
 #ifndef SOL_H
 #define SOL_H
 
-typedef struct Data Data;
 typedef struct Sq Sq;
+typedef struct El El;
 typedef struct Listq Listq;
+typedef struct Data Data;
 
 #include "grid.h"
 
 struct Sq {
-	Sq*	next;
 	int	x;
 	int	y;
 	int	val;
 };
 
+struct El {
+	Sq*	sq;
+	El*	next;
+	El*	prev;
+};
+
 struct Listq {
-	Sq*	first;
-	Sq*	last;
+	El*	first;
+	El*	last;
 	int	size;
 };
 
 struct Data {
-	Listq*	sqs;	/* A list of all squares	*/
+	Sq**	grid;	/* A grid containing structs	*/
+	Grid*	g;	/* Points to original grid obj	*/
+	Listq*	best;	/* A list of the k best squares	*/
 	double	mn;	/* Mean distance to neighbour	*/
 	double	mv;	/* Mean value in grid		*/
 	double	mh;	/* Mean value from one house	*/

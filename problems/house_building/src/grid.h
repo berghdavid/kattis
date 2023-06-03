@@ -4,7 +4,7 @@
 typedef struct Grid Grid;
 
 struct Grid {
-	int**	g;	/* List of rows with grid ints	*/
+	int**	grid;	/* List of rows with grid ints	*/
 	int*	px;	/* List of persons x-positions	*/
 	int*	py;	/* List of persons y-positions	*/
 	int	t;	/* Test case id			*/

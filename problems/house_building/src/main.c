@@ -11,7 +11,6 @@ int main(int argc, char* argv[])
 	double	timediff;
 
 	g = get_grid();
-	print_grid(g);
 
 	/* Run algorithm */
 	start_ct = clock();
