@@ -11,13 +11,13 @@ typedef struct Data Data;
 struct Sq {
 	int	x;
 	int	y;
-	int	val;
+	int	score;
+	El*	adj;
 };
 
 struct El {
 	Sq*	sq;
 	El*	next;
-	El*	prev;
 };
 
 struct Listq {
@@ -27,9 +27,9 @@ struct Listq {
 };
 
 struct Data {
-	Sq**	grid;	/* A grid containing structs	*/
+	Sq***	grid;	/* A grid containing structs	*/
 	Grid*	g;	/* Points to original grid obj	*/
-	Listq*	best;	/* A list of the k best squares	*/
+	Listq*	all;	/* A list of the k best squares	*/
 	double	mn;	/* Mean distance to neighbour	*/
 	double	mv;	/* Mean value in grid		*/
 	double	mh;	/* Mean value from one house	*/

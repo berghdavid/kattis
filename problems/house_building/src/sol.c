@@ -13,12 +13,19 @@ void print_data(Data* d)
 void print_sol(Data* d)
 {
 	El*	el;
+	int	i;
+	int	sum;
 
-	el = d->best->first;
+	el = d->all->first;
+	sum = 0;
+	printf("Optimal set of squares\n");
+	printf("------------------------\n");
 	while (el != NULL) {
+		sum += el->sq->score;
 		printf("%d %d\n", el->sq->x, el->sq->y);
 		el = el->next;
 	}
+	printf("Total score: %d\n", sum);
 }
 
 void print_listq(Listq* q)
@@ -29,88 +36,14 @@ void print_listq(Listq* q)
 	el = q->first;
 	printf("\nSize: %d\n", q->size);
 	printf(" --- 10 first ---\n");
-	printf("Val | X \t| Y\n");
+	printf("Pts  | X \t| Y\n");
 	printf("-----------------------\n");
 	for (i = 0; i < 10; i++) {
 		if (el == NULL) {
 			break;
 		}
-		printf(" %.2d | %d \t| %d\n", el->sq->val, el->sq->x, el->sq->y);
+		printf(" %.4d | %d \t| %d\n", el->sq->score, el->sq->x, el->sq->y);
 		el = el->next;
-	}
-
-	el = q->last;
-	printf("\n --- 10 last ---\n");
-	printf("Val | X \t| Y\n");
-	printf("-----------------------\n");
-	for (i = 0; i < 10; i++) {
-		if (el == NULL) {
-			break;
-		}
-		printf(" %.2d | %d \t| %d\n", el->sq->val, el->sq->x, el->sq->y);
-		el = el->prev;
-	}
-}	
-
-void append_sq(Data* d, Sq* sq)
-{
-	Listq*	q;
-	El*	el;
-	El*	el2;
-
-	q = d->best;
-
-	if (q->size == d->g->k && sq->val <= q->last->sq->val) {
-		return;
-	}
-	el = malloc(sizeof(El));
-	el->sq = sq;
-	el->next = NULL;
-	el->prev = NULL;
-
-	if (q->size == d->g->k) {
-		if (sq->val >= q->first->sq->val) {
-			el->next = q->first;
-			q->first->prev = el;
-			q->first = el;
-		} else {
-			el2 = q->last;
-			while (sq->val > el2->sq->val) {
-				el2 = el2->prev;
-			}
-			el->next = el2->next;
-			el->prev = el2;
-			el2->next->prev = el;
-			el2->next = el;
-		}
-
-		el = q->last;
-		q->last = q->last->prev;
-		q->last->next = NULL;
-		free(el);
-	} else {
-		if (q->first == NULL) {
-			q->first = el;
-			q->last = el;
-		} else if (sq->val >= q->first->sq->val) {
-			el->next = q->first;
-			q->first->prev = el;
-			q->first = el;
-		} else if (sq->val <= q->last->sq->val) {
-			el->prev = q->last;
-			q->last->next = el;
-			q->last = el;
-		} else {
-			el2 = q->last->prev;
-			while (sq->val > el2->sq->val) {
-				el2 = el2->prev;
-			}
-			el->prev = el2;
-			el->next = el2->next;
-			el2->next->prev = el;
-			el2->next = el;
-		}
-		q->size++;
 	}
 }
 
@@ -123,23 +56,19 @@ Data* init_data(Grid* g)
 	int		j;
 
 	d = malloc(sizeof(Data));
-	d->best = malloc(sizeof(Listq));
-	d->best->first = NULL;
-	d->best->last = NULL;
-	d->best->size = 0;
+	d->all = malloc(sizeof(Listq));
+	d->all->first = NULL;
+	d->all->last = NULL;
+	d->all->size = 0;
 
 	d->g = g;
-	d->grid = malloc(g->n * sizeof(Sq*));
+	d->grid = malloc(g->n * sizeof(Sq**));
 
 	sum = 0;
 	for (i = 0; i < g->n; i++) {
-		d->grid[i] = malloc(g->m * sizeof(Sq));
+		d->grid[i] = malloc(g->m * sizeof(Sq*));
 		for (j = 0; j < g->m; j++) {
-			sq = &d->grid[i][j];
-			sq->x = j;
-			sq->y = i;
-			sq->val = g->grid[i][j];
-			append_sq(d, sq);
+			d->grid[i][j] = NULL;
 			sum += g->grid[i][j];
 		}
 	}
@@ -157,18 +86,60 @@ void free_data(Data* d)
 	El*	eltmp;
 	int	i;
 
-	el = d->best->first;
+	el = d->all->first;
 	while (el != NULL) {
 		eltmp = el->next;
+		free(el->sq);
 		free(el);
 		el = eltmp;
 	}
-	free(d->best);
+	free(d->all);
 	for (i = 0; i < d->g->n; i++) {
 		free(d->grid[i]);
 	}
 	free(d->grid);
 	free(d);
+}
+
+void append_sq(Listq* l, Sq* sq)
+{
+	El*	el;
+
+	el = malloc(sizeof(El));
+	el->sq = sq;
+	el->next = NULL;
+
+	if (l->last != NULL) {
+		l->last->next = el;
+	} else {
+		l->first = el;
+	}
+	l->last = el;
+}
+
+void set_sq(Data* d, int x, int y)
+{
+	Sq*	sq;
+
+	sq = malloc(sizeof(Sq));
+	sq->adj = NULL;
+	sq->score = 0;
+	sq->x = x;
+	sq->y = y;
+	append_sq(d->all, sq);
+	d->grid[x][y] = sq;
+}
+
+void set_squares(Data* d)
+{
+	int	i;
+	int	dist;
+
+	set_sq(d, 0, 0);
+	set_sq(d, 0, d->g->n - 1);
+	set_sq(d, d->g->m - 1, 0);
+	set_sq(d, d->g->m - 1, d->g->n - 1);
+	dist = d->g->m;
 }
 
 void brute_force(Grid* g)
@@ -177,12 +148,12 @@ void brute_force(Grid* g)
 
 	d = init_data(g);
 	print_grid(g);
-	//print_listq(d->best);
+	set_squares(d);
+	print_sol(d);
 	free_data(d);
 }
 
 void solve(Grid* g)
 {
 	brute_force(g);
-	//print_sol(g);
 }

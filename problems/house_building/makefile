@@ -21,14 +21,14 @@ run_data: $(DATA_DIR) main
 
 # Run a test case
 run: main
-	./main < data/11.in
+	./main < data/12.in
 
 main: $(SRC)
 	$(CC) -o main $(CFLAGS) $(OPT_FLAGS) $(SRC) $(LDFLAGS)
 
 # Run a default test case with valgrind
 valgrind: debug
-	valgrind --leak-check=full --track-origins=yes ./debug < data/11.in
+	valgrind --leak-check=full --track-origins=yes ./debug < data/12.in
 
 debug: $(SRC)
 	$(CC) -o debug $(DEBUG_FLAGS) $(CFLAGS) $(SRC) $(LDFLAGS)
